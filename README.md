@@ -16,7 +16,7 @@ The response is in JSON Format like so
   "wrongPassword": false,
   "success": true,
 }
-'''
+```
 
 The `notFound` flag is set to true when a no user is found using the login credentials.
 
