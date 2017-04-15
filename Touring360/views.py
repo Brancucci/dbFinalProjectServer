@@ -126,6 +126,8 @@ def login(request):
                     'wrongPassword': False,
                     'success': False,
                 }))
+    else:
+        return HttpResponse("You must pass parameters (A body) to this url")
 
 
 
