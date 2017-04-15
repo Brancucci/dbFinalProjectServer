@@ -2,6 +2,10 @@ from django.http import HttpRequest
 from django.http import HttpResponse
 #Importing needed modules of PyMySQL
 from django.http import JsonResponse
+import json
+
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from pymysql import connect, err, sys, cursors
 
 
@@ -13,10 +17,46 @@ conn = connect(host='mysqldb.criblyzj9wkn.us-west-2.rds.amazonaws.com',
                         db='DatabaseProjectDB');
 
 
-
-
 def index(request):
-    return HttpResponse("My home page!!")
+    return HttpResponse("My home page")
+
+    # if request.method == 'POST':
+    #     try:
+    #         body_unicode = request.body.decode('utf-8')
+    #         body = json.loads(body_unicode)
+    #         user = body['email']
+    #         password = body['password']
+    #         cursor = conn.cursor(cursors.DictCursor);
+    #         cursor.execute("SELECT * FROM `USERS` WHERE `email` = %s", str(user))
+    #         data = cursor.fetchall()
+    #     except KeyError:
+    #         return HttpResponse("Key Error")
+    #     else:
+    #         if data:
+    #             if data[0]["password"] != password:
+    #                 # wrong password
+    #                 return HttpResponse(JsonResponse({
+    #                     'notFound': False,
+    #                     'wrongPassword': True,
+    #                     'success': False,
+    #                 }))
+    #             else:
+    #                 # user password matches password
+    #                 return HttpResponse(JsonResponse({
+    #                     'notFound': False,
+    #                     'wrongPassword': False,
+    #                     'success': True,
+    #                     }))
+    #         else:
+    #             return HttpResponse(JsonResponse({
+    #                 'notFound': True,
+    #                 'wrongPassword': False,
+    #                 'success': False,
+    #             }))
+    #
+    #     return HttpResponse(data)
+    # else:
+    #     return HttpResponse("Was not a post method")
 
     """
     if request.method == 'GET':
@@ -50,18 +90,20 @@ to respond:
 b'{"foo": "bar"}'
 """
 
-
+@method_decorator(csrf_exempt)
 def login(request):
     user = ""
-    if request.method == 'GET':
-        cursor = conn.cursor(cursors.DictCursor);
+    if request.method == 'POST':
         try:
-            user = request.GET['email']
-            password = request.GET['password']
+            body_unicode = request.body.decode('utf-8')
+            body = json.loads(body_unicode)
+            user = body['email']
+            password = body['password']
+            cursor = conn.cursor(cursors.DictCursor);
             cursor.execute("SELECT * FROM `USERS` WHERE `email` = %s", user)
             data = cursor.fetchall()
         except KeyError:
-            return HttpResponse("Key Error")
+            return HttpResponse("Key error 1")
         else:
             if data:
                 if data[0]["password"] != password:
@@ -84,6 +126,39 @@ def login(request):
                     'wrongPassword': False,
                     'success': False,
                 }))
+
+
+
+
+            # try:
+            #     user = request.GET['email']
+            #     password = request.GET['password']
+            #     cursor.execute("SELECT * FROM `USERS` WHERE `email` = %s", user)
+            #     data = cursor.fetchall()
+            # except KeyError:
+            #     return HttpResponse("Key Error 2")
+            # else:
+            #     if data:
+            #         if data[0]["password"] != password:
+            #             # wrong password
+            #             return HttpResponse(JsonResponse({
+            #                 'notFound': False,
+            #                 'wrongPassword': True,
+            #                 'success': False,
+            #             }))
+            #         else:
+            #             # user password matches password
+            #             return HttpResponse(JsonResponse({
+            #                 'notFound': False,
+            #                 'wrongPassword': False,
+            #                 'success': True,
+            #                 }))
+            #     else:
+            #         return HttpResponse(JsonResponse({
+            #             'notFound': True,
+            #             'wrongPassword': False,
+            #             'success': False,
+            #         }))
 
 
 
