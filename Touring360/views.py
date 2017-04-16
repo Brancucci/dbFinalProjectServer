@@ -20,31 +20,8 @@ def index(request):
     return HttpResponse("My home page")
 
 
-    """
-    if request.method == 'GET':
-        cursor = conn.cursor(cursors.DictCursor);
-        user = request.GET['email']
-        cursor.execute("SELECT * FROM `USERS` WHERE `email` = %s", user)
-        data = cursor.fetchall()
-
-        return HttpResponse("Testing: " + data[0]["email"] + " password" + data[0]["password"])
-    elif request.method == 'POST':
-        user = request.POST['email']
-        password = request.POST['password']
-        cursor = conn.cursor(cursors.DictCursor);
-        cursor.execute("SELECT * FROM `USERS` WHERE `email` = %s", str(user))
-        data = cursor.fetchall()
-        return HttpResponse(data)
-    else:
-        return HttpResponse("failure")
-
-    conn.close()
-
-"""
-
 @method_decorator(csrf_exempt)
 def login(request):
-    user = ""
     if request.method == 'POST':
         try:
             body_unicode = request.body.decode('utf-8')
@@ -98,7 +75,6 @@ def register(request):
             firstName = body['firstName']
             lastName = body['lastName']
             date = time.strftime("%Y-%m-%d")
-
         except KeyError:
             return HttpResponse(JsonResponse({
                 'error': True,
@@ -135,35 +111,137 @@ def register(request):
         return HttpResponse("You must pass parameters (A body) to this url")
 
 
-# try:
-#     user = request.GET['email']
-#     password = request.GET['password']
-#     cursor.execute("SELECT * FROM `USERS` WHERE `email` = %s", user)
-#     data = cursor.fetchall()
-# except KeyError:
-#     return HttpResponse("Key Error 2")
-# else:
-#     if data:
-#         if data[0]["password"] != password:
-#             # wrong password
-#             return HttpResponse(JsonResponse({
-#                 'notFound': False,
-#                 'wrongPassword': True,
-#                 'success': False,
-#             }))
-#         else:
-#             # user password matches password
-#             return HttpResponse(JsonResponse({
-#                 'notFound': False,
-#                 'wrongPassword': False,
-#                 'success': True,
-#                 }))
-#     else:
-#         return HttpResponse(JsonResponse({
-#             'notFound': True,
-#             'wrongPassword': False,
-#             'success': False,
-#         }))
+@method_decorator(csrf_exempt)
+def search_city(request):
+    if request.method == 'GET':
+        startDate = ""
+        endDate = ""
+        try:
+            startDate = request.GET['start_available_date']
+            endDate = request.GET['end_available_date']
+        except KeyError as e:
+            print(e)
+            pass
+        try:
+            cursor = conn.cursor(cursors.DictCursor);
+            city = request.GET['city']
+            if startDate:
+                cursor.execute("SELECT * FROM `HOSTS` WHERE `city` = %s AND `start_available_date` <= %s AND `end_available_date` >= %s",
+                               (city, startDate, endDate))
+            else:
+                cursor.execute("SELECT * FROM `HOSTS` WHERE `city` = %s", city)
+            data = cursor.fetchall()
+        except KeyError as e:
+            print(e)
+            return HttpResponse(JsonResponse({
+                'error': True,
+                'found': False,
+            }))
+        else:
+            if not data:
+                # no results
+                return HttpResponse(JsonResponse({
+                    'error': False,
+                    'found': False,
+                }))
+            else:
+                return HttpResponse(JsonResponse({
+                    'error': False,
+                    'found': True,
+                    'results': data,
+                }))
+    else:
+        return HttpResponse("You cannot pass parameters to this call")
+
+
+@method_decorator(csrf_exempt)
+def search_country(request):
+    if request.method == 'GET':
+        startDate = ""
+        endDate = ""
+        try:
+            startDate = request.GET['start_available_date']
+            endDate = request.GET['end_available_date']
+        except KeyError as e:
+            print(e)
+            pass
+        try:
+            cursor = conn.cursor(cursors.DictCursor);
+            country = request.GET['country']
+            if country == 'US' or country == 'USA' or country == 'us' or country == 'usa':
+                country = 'United States'
+            if startDate:
+                cursor.execute("SELECT * FROM `HOSTS` WHERE `country` = %s AND `start_available_date` <= %s AND `end_available_date` >= %s",
+                               (country, startDate, endDate))
+            else:
+                cursor.execute("SELECT * FROM `HOSTS` WHERE `country` = %s", country)
+            data = cursor.fetchall()
+        except KeyError as e:
+            print(e)
+            return HttpResponse(JsonResponse({
+                'error': True,
+                'found': False,
+            }))
+        else:
+            if not data:
+                # no results
+                return HttpResponse(JsonResponse({
+                    'error': False,
+                    'found': False,
+                }))
+            else:
+                # return results
+                return HttpResponse(JsonResponse({
+                    'error': False,
+                    'found': True,
+                    'results': data,
+                }))
+
+
+@method_decorator(csrf_exempt)
+def search_city_country(request):
+    if request.method == 'GET':
+        startDate = ""
+        endDate = ""
+        try:
+            startDate = request.GET['start_available_date']
+            endDate = request.GET['end_available_date']
+        except KeyError as e:
+            print(e)
+            pass
+        try:
+            cursor = conn.cursor(cursors.DictCursor);
+            city = request.GET['city']
+            country = request.GET['country']
+            if country == 'US' or country == 'USA' or country == 'us' or country == 'usa':
+                country = 'United States'
+            if startDate:
+                cursor.execute("SELECT * FROM `HOSTS` WHERE `city` = %s AND `country` = %s AND `start_available_date` <= %s AND `end_available_date` >= %s",
+                               (city, country, startDate, endDate))
+            else:
+                cursor.execute("SELECT * FROM `HOSTS` WHERE `city` = %s AND `country` = %s", (city, country))
+            data = cursor.fetchall()
+        except KeyError as e:
+            print(e)
+            return HttpResponse(JsonResponse({
+                'error': True,
+                'found': False,
+            }))
+        else:
+            if not data:
+                # no results
+                return HttpResponse(JsonResponse({
+                    'error': False,
+                    'found': False,
+                }))
+            else:
+                # return results
+                return HttpResponse(JsonResponse({
+                    'error': False,
+                    'found': True,
+                    'results': data,
+                }))
+
 
 
 
