@@ -309,6 +309,36 @@ def book(request):
 
 
 
+@method_decorator(csrf_exempt)
+def reviews(request):
+    if request.method == 'GET':
+
+        try:
+            cursor = conn.cursor(cursors.DictCursor);
+            host = request.GET['hostEmail']
+        except err as e:
+            print(e)
+            return HttpResponse(JsonResponse({
+                'error': True,
+                'reviewsAvailable': False,
+                'reviews': [],
+            }))
+        else:
+            cursor.execute("SELECT * FROM `REVIEWS` WHERE `host_email` = %s", host)
+            data = cursor.fetchall()
+            if data:
+                return HttpResponse(JsonResponse({
+                    'error': False,
+                    'reviewsAvailable': True,
+                    'reviews': data,
+                }))
+            else:
+                return HttpResponse(JsonResponse({
+                    'error': False,
+                    'reviewsAvailable': False,
+                    'reviews': [],
+                }))
+
 
 
 

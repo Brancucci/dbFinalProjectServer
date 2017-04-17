@@ -10,5 +10,6 @@ urlpatterns = [
     url(r'^search/country$', views.search_country, name='search_country'),
     url(r'^search/city&country$', views.search_city_country, name='search_city_country'),
     url(r'^book$', views.book, name='book'),
+    url(r'^reviews$', views.reviews, name='reviews')
 
 ]
