@@ -75,7 +75,7 @@ def register(request):
             firstName = body['firstName']
             lastName = body['lastName']
             date = time.strftime("%Y-%m-%d")
-        except KeyError:
+        except err:
             return HttpResponse(JsonResponse({
                 'error': True,
                 'taken': False,
@@ -119,7 +119,7 @@ def search_city(request):
         try:
             startDate = request.GET['start_available_date']
             endDate = request.GET['end_available_date']
-        except KeyError as e:
+        except err as e:
             print(e)
             pass
         try:
@@ -131,7 +131,7 @@ def search_city(request):
             else:
                 cursor.execute("SELECT * FROM `HOSTS` WHERE `city` = %s", city)
             data = cursor.fetchall()
-        except KeyError as e:
+        except err as e:
             print(e)
             return HttpResponse(JsonResponse({
                 'error': True,
@@ -162,7 +162,7 @@ def search_country(request):
         try:
             startDate = request.GET['start_available_date']
             endDate = request.GET['end_available_date']
-        except KeyError as e:
+        except err as e:
             print(e)
             pass
         try:
@@ -176,7 +176,7 @@ def search_country(request):
             else:
                 cursor.execute("SELECT * FROM `HOSTS` WHERE `country` = %s", country)
             data = cursor.fetchall()
-        except KeyError as e:
+        except err as e:
             print(e)
             return HttpResponse(JsonResponse({
                 'error': True,
@@ -206,7 +206,7 @@ def search_city_country(request):
         try:
             startDate = request.GET['start_available_date']
             endDate = request.GET['end_available_date']
-        except KeyError as e:
+        except err as e:
             print(e)
             pass
         try:
@@ -221,7 +221,7 @@ def search_city_country(request):
             else:
                 cursor.execute("SELECT * FROM `HOSTS` WHERE `city` = %s AND `country` = %s", (city, country))
             data = cursor.fetchall()
-        except KeyError as e:
+        except err as e:
             print(e)
             return HttpResponse(JsonResponse({
                 'error': True,
@@ -241,6 +241,71 @@ def search_city_country(request):
                     'found': True,
                     'results': data,
                 }))
+
+
+@method_decorator(csrf_exempt)
+def book(request):
+    if request.method == 'POST':
+        # get the body of the post request
+        try:
+            body_unicode = request.body.decode('utf-8')
+            body = json.loads(body_unicode)
+            host = body['hostEmail']
+            tourist = body['touristEmail']
+            start_date = body['startDate']
+            end_date = body['endDate']
+            city = body['city']
+            country = body['country']
+        except err:
+            return HttpResponse(JsonResponse({
+                'error': True,
+                'tripTaken': False,
+                'bookedTrip': False,
+            }))
+        else:
+            try:
+                # check if host already has a trip booked for that time
+                cursor = conn.cursor(cursors.DictCursor);
+                cursor.execute("SELECT * FROM `TRIPS` WHERE `host_email` = %s AND ((`start_date` >= %s AND `start_date` <= %s) OR"
+                               " (`end_date` >= %s AND `end_date` <= %s))", (host, start_date, end_date, start_date, end_date))
+                data = cursor.fetchall()
+            except err:
+                return HttpResponse(JsonResponse({
+                    'error': True,
+                    'tripTaken': False,
+                    'bookedTrip': False,
+                }))
+            else:
+                if data:
+                    #host is already booked
+                    return HttpResponse(JsonResponse({
+                        'error': False,
+                        'tripTaken': True,
+                        'bookedTrip': False,
+                    }))
+                else:
+                    try:
+                        # insert into Trips table
+                        sql = "INSERT INTO TRIPS (host_email, tourist_email, city, country, start_date, end_date) " \
+                              "VALUES (%s, %s, %s, %s, %s, %s)"
+                        cursor.execute(sql, (host, tourist, city, country, start_date, end_date))
+                        # connection is not autocommit by default. So you must commit to save
+                        # your changes.
+                        conn.commit()
+                    except err:
+                        return HttpResponse(JsonResponse({
+                            'error': True,
+                            'tripTaken': False,
+                            'bookedTrip': False,
+                        }))
+                    else:
+                        return HttpResponse(JsonResponse({
+                            'error': False,
+                            'tripTaken': False,
+                            'bookedTrip': True,
+                        }))
+    else:
+        return HttpResponse("You must pass parameters (A body) to this url")
 
 
 
