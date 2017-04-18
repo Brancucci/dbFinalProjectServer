@@ -103,3 +103,32 @@ The response is in JSON format like so
 The `error` flag is set to true when an error occurs.
 
 The `found` flag is set to true when hosts are found in a given search.
+
+### Book a Trip
+
+To book a trip, execute a `POST` request to the following endpoint `http://django-env.92j4wqasxc.us-east-1.elasticbeanstalk.com/Touring360/book`. The body of the request needs to have the following parameters
+
+* hostEmail
+* touristEmail
+* startDate
+* endDate
+* city
+* country
+
+The `startDate` and `endDate` refer to the start date and end date of the trip the user is interested in booking.
+
+The response is in JSON format like so
+
+```
+{
+   error: false,
+   invalidTrip: true,
+   tripBooked: false
+}
+```
+
+The `error` flag is set to true when an error occurred.
+
+The `invalidTrip` flag is set to true when dates overlap with an existing trip.
+
+The `tripBooked` flag is set to true when a trip is successfully booked.
