@@ -119,7 +119,7 @@ def search_city(request):
         try:
             startDate = request.GET['start_available_date']
             endDate = request.GET['end_available_date']
-        except err as e:
+        except KeyError as e:
             print(e)
             pass
         try:
@@ -131,7 +131,7 @@ def search_city(request):
             else:
                 cursor.execute("SELECT * FROM `HOSTS` WHERE `city` = %s", city)
             data = cursor.fetchall()
-        except err as e:
+        except KeyError as e:
             print(e)
             return HttpResponse(JsonResponse({
                 'error': True,
@@ -162,7 +162,7 @@ def search_country(request):
         try:
             startDate = request.GET['start_available_date']
             endDate = request.GET['end_available_date']
-        except err as e:
+        except KeyError as e:
             print(e)
             pass
         try:
@@ -176,7 +176,7 @@ def search_country(request):
             else:
                 cursor.execute("SELECT * FROM `HOSTS` WHERE `country` = %s", country)
             data = cursor.fetchall()
-        except err as e:
+        except KeyError as e:
             print(e)
             return HttpResponse(JsonResponse({
                 'error': True,
@@ -206,7 +206,7 @@ def search_city_country(request):
         try:
             startDate = request.GET['start_available_date']
             endDate = request.GET['end_available_date']
-        except err as e:
+        except KeyError as e:
             print(e)
             pass
         try:
@@ -221,7 +221,7 @@ def search_city_country(request):
             else:
                 cursor.execute("SELECT * FROM `HOSTS` WHERE `city` = %s AND `country` = %s", (city, country))
             data = cursor.fetchall()
-        except err as e:
+        except KeyError as e:
             print(e)
             return HttpResponse(JsonResponse({
                 'error': True,
@@ -256,7 +256,7 @@ def book(request):
             end_date = body['endDate']
             city = body['city']
             country = body['country']
-        except err:
+        except KeyError:
             return HttpResponse(JsonResponse({
                 'error': True,
                 'tripTaken': False,
@@ -269,7 +269,7 @@ def book(request):
                 cursor.execute("SELECT * FROM `TRIPS` WHERE `host_email` = %s AND ((`start_date` >= %s AND `start_date` <= %s) OR"
                                " (`end_date` >= %s AND `end_date` <= %s))", (host, start_date, end_date, start_date, end_date))
                 data = cursor.fetchall()
-            except err:
+            except KeyError:
                 return HttpResponse(JsonResponse({
                     'error': True,
                     'tripTaken': False,
@@ -292,7 +292,7 @@ def book(request):
                         # connection is not autocommit by default. So you must commit to save
                         # your changes.
                         conn.commit()
-                    except err:
+                    except KeyError:
                         return HttpResponse(JsonResponse({
                             'error': True,
                             'tripTaken': False,
@@ -316,7 +316,7 @@ def reviews(request):
         try:
             cursor = conn.cursor(cursors.DictCursor);
             host = request.GET['hostEmail']
-        except err as e:
+        except KeyError as e:
             print(e)
             return HttpResponse(JsonResponse({
                 'error': True,
